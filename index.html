@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiro & Silicon | Connecting Talent with Opportunity</title>
+    <base target="_self">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Preline JS for dropdowns and other interactive components -->
+    <script src="https://cdn.jsdelivr.net/npm/@preline/preline@2.0.0/dist/preline.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Tailwind CSS configuration for custom colors and dark mode
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            light: '#4F46E5',
+                            dark: '#6366F1'
+                        },
+                        secondary: {
+                            light: '#10B981',
+                            dark: '#34D399'
+                        },
+                        shiro: '#3B82F6',
+                        Silicon: '#F59E0B'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Keyframe animation for fading in sections */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        /* Gradient text for the logo */
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(90deg, #3B82F6, #F59E0B);
+        }
+        /* Card hover effect */
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* Placeholder for video sections (if any were present) */
+        .video-placeholder {
+            background: linear-gradient(135deg, #E5E7EB, #9CA3AF);
+        }
+        /* Custom styles for all modals (message, login, register, submit request, view details) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            position: relative; /* For close button positioning */
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s ease;
+        }
+        .modal-close-button:hover {
+            color: #333;
+        }
+        /* Inter font for better aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+
+    <!-- Message Box/Modal HTML -->
+    <div id="messageModalOverlay" class="modal-overlay">
+        <div id="messageModalContent" class="modal-content text-center">
+            <button class="modal-close-button" onclick="hideMessageModal()">&times;</button>
+            <p id="messageModalText" class="text-lg font-semibold text-gray-800 dark:text-gray-900 mb-4"></p>
+            <button onclick="hideMessageModal()" class="px-6 py-2 bg-shiro hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">OK</button>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" onclick="hideLoginModal()">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-800">Login</h2>
+            <input id="login-email" type="email" placeholder="Email" class="border border-gray-300 p-3 mb-3 w-full rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+            <input id="login-password" type="password" placeholder="Password" class="border border-gray-300 p-3 mb-4 w-full rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="login()" class="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md transition duration-300 ease-in-out">Login</button>
+                <button onclick="logout()" class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-md transition duration-300 ease-in-out">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" onclick="hideRegisterModal()">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-800">Register</h2>
+            <input id="reg-email" type="email" placeholder="Email" class="border border-gray-300 p-3 mb-3 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            <input id="reg-password" type="password" placeholder="Password" class="border border-gray-300 p-3 mb-4 w-full rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            <button onclick="register()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-300 ease-in-out w-full">Register</button>
+        </div>
+    </div>
+
+    <!-- Submit Request Modal -->
+    <div id="submitRequestModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" onclick="hideSubmitRequestModal()">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-800">Submit New Request</h2>
+            <input id="request-title" type="text" placeholder="Request Title" class="border border-gray-300 p-3 mb-3 w-full rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+            <textarea id="request-description" placeholder="Description" class="border border-gray-300 p-3 mb-3 w-full rounded-md h-24 resize-y focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+            <input id="request-category" type="text" placeholder="Category (e.g., Software, Course, College Fees)" class="border border-gray-300 p-3 mb-4 w-full rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+            <button onclick="submitRequest()" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-md transition duration-300 ease-in-out w-full">Submit Request</button>
+        </div>
+    </div>
+
+    <!-- Request Details Modal -->
+    <div id="requestDetailsModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" onclick="hideRequestDetailsModal()">&times;</button>
+            <h2 id="requestDetailsModalTitle" class="text-2xl font-bold mb-3 text-gray-900 dark:text-gray-800"></h2>
+            <p id="requestDetailsModalDescription" class="text-gray-700 dark:text-gray-300 mb-2"></p>
+            <p id="requestDetailsModalCategory" class="text-sm text-gray-600 dark:text-gray-400 mb-1"></p>
+            <p id="requestDetailsModalUser" class="text-sm text-gray-600 dark:text-gray-400 mb-1"></p>
+            <p id="requestDetailsModalDate" class="text-sm text-gray-600 dark:text-gray-400 mb-4"></p>
+            <a id="requestDetailsModalFundLink" href="#" target="_blank" class="inline-block px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200">Fund this Request via PayPal</a>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="flex-shrink-0 flex items-center" onclick="navigate(event, 'home')">
+                        <div>
+                            <span class="text-2xl font-bold gradient-text">Shiro & Silicon</span>
+                            <span class="block text-xs text-gray-500 dark:text-gray-400">ሽሮ እና ሲሊከን</span>
+                        </div>
+                    </a>
+                </div>
+                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+                    <a href="#" class="text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark px-3 py-2 text-sm font-medium" onclick="navigate(event, 'home')">Home</a>
+                    <a href="#" class="text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark px-3 py-2 text-sm font-medium" onclick="navigate(event, 'requests')">Requests</a>
+                    <a href="#" class="text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark px-3 py-2 text-sm font-medium" onclick="navigate(event, 'success-stories')">Success Stories</a>
+                    <a href="#" class="text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark px-3 py-2 text-sm font-medium" onclick="navigate(event, 'how-it-works')">How It Works</a>
+                    <a href="#" class="text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark px-3 py-2 text-sm font-medium" onclick="navigate(event, 'faq')">FAQ</a>
+                    <div class="relative" data-hs-dropdown>
+                        <button id="hs-dropdown-custom-trigger" type="button" class="flex items-center space-x-2 text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark px-3 py-2 text-sm font-medium">
+                            <span id="authStatusText">Account</span>
+                            <svg class="w-2.5 h-2.5" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 5L8.16086 10.6869C8.35239 10.8637 8.64761 10.8637 8.83914 10.6869L15 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                            </svg>
+                        </button>
+                        <div class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem] bg-white shadow-md rounded-lg p-2 mt-2 dark:bg-gray-800 dark:border dark:border-gray-700" aria-labelledby="hs-dropdown-custom-trigger">
+                            <!-- Conditional rendering for login/register/profile/logout -->
+                            <a id="navLoginBtn" class="flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#" onclick="showLoginModal(); return false;">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                            <a id="navRegisterBtn" class="flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#" onclick="showRegisterModal(); return false;">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                            <a id="navProfileBtn" class="hidden items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#" onclick="navigate(event, 'profile')">
+                                <i class="fas fa-user-circle"></i> My Profile
+                            </a>
+                            <a id="navSettingsBtn" class="hidden items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#" onclick="navigate(event, 'settings')">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                            <div id="navDivider" class="hidden border-t border-gray-200 my-2 dark:border-gray-700"></div>
+                            <a id="navLogoutBtn" class="hidden flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="#" onclick="logout(); return false;">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                    <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm p-2.5">
+                        <i id="theme-icon" class="fas fa-moon"></i>
+                    </button>
+                </div>
+                <div class="-mr-2 flex items-center md:hidden">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-light dark:focus:ring-primary-dark" aria-controls="mobile-menu" aria-expanded="false" onclick="window.toggleMobileMenu()">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" onclick="navigate(event, 'home')">Home</a>
+                <a href="#" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" onclick="navigate(event, 'requests')">Requests</a>
+                <a href="#" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" onclick="navigate(event, 'success-stories')">Success Stories</a>
+                <a href="#" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" onclick="navigate(event, 'how-it-works')">How It Works</a>
+                <a href="#" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" onclick="navigate(event, 'faq')">FAQ</a>
+                <!-- Mobile menu conditional rendering for login/register/profile/logout -->
+                <a id="mobileNavLoginBtn" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" href="#" onclick="showLoginModal(); window.toggleMobileMenu(); return false;">Login</a>
+                <a id="mobileNavRegisterBtn" class="block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" href="#" onclick="showRegisterModal(); window.toggleMobileMenu(); return false;">Register</a>
+                <a id="mobileNavProfileBtn" class="hidden block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" href="#" onclick="navigate(event, 'profile')">Profile</a>
+                <a id="mobileNavSettingsBtn" class="hidden block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" href="#" onclick="navigate(event, 'settings')">Settings</a>
+                <a id="mobileNavLogoutBtn" class="hidden block px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark" href="#" onclick="logout(); window.toggleMobileMenu(); return false;">Logout</a>
+                <button id="mobile-theme-toggle" type="button" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-900 dark:text-white hover:text-primary-light dark:hover:text-primary-dark">
+                    <span>Toggle Theme</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Hero Section -->
+        <section id="home" class="fade-in">
+            <div class="text-center py-12 md:py-20">
+                <h1 class="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-2">
+                    <span class="text-shiro">Shiro</span> & <span class="text-Silicon">Silicon</span>
+                </h1>
+                <p class="text-lg text-gray-600 dark:text-gray-300 mb-6">ሽሮ እና ሲሊከን</p>
+                <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
+                    Connecting talented youth in Ethiopia with diaspora sponsors to fund digital tools and learning opportunities.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <button class="px-6 py-3 bg-shiro hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200" onclick="showRegisterModal()">
+                        I Need Support <i class="fas fa-hands-helping ml-2"></i>
+                    </button>
+                    <button class="px-6 py-3 bg-Silicon hover:bg-yellow-700 text-white font-medium rounded-lg transition-colors duration-200" onclick="showRegisterModal()">
+                        I Want to Help <i class="fas fa-hand-holding-heart ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover transition-all duration-300">
+                    <div class="text-shiro text-3xl mb-4">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">For Shiro (Youth)</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Request access to digital tools, courses, and resources that will help you grow your skills and career.
+                    </p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover transition-all duration-300">
+                    <div class="text-Silicon text-3xl mb-4">
+                        <i class="fas fa-globe-africa"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">For Silicon (Sponsors)</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Directly fund tools and learning opportunities for talented youth in Ethiopia with full transparency.
+                    </p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover transition-all duration-300">
+                    <div class="text-primary-light dark:text-primary-dark text-3xl mb-4">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">How It Works</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Youth request specific needs, sponsors fund them directly, and we ensure everything is delivered properly.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Requests Section -->
+        <section id="requests" class="hidden fade-in">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Current Requests</h2>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+                    <div class="relative w-full sm:w-auto">
+                        <select class="block appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark w-full">
+                            <option>All Categories</option>
+                            <option>Software</option>
+                            <option>Courses</option>
+                            <option>College Application Fees</option>
+                            <option>Other</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <button class="bg-primary-light dark:bg-primary-dark text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 w-full sm:w-auto" onclick="showSubmitRequestModal()">
+                        <i class="fas fa-plus mr-2"></i> New Request
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="requests-container">
+                <!-- Requests will be dynamically inserted here by Firebase listener -->
+            </div>
+        </section>
+
+        <!-- Success Stories Section -->
+        <section id="success-stories" class="hidden fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Success Stories</h2>
+            
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover transition-all duration-300">
+                    <img src="https://picsum.photos/800/400?random=10" alt="Success story" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">From Student to Software Engineer</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">"Thanks to a Silicon sponsor who funded my DataCamp subscription, I was able to gain the skills needed to land my first job as a junior data analyst at a tech startup in Addis Ababa."</p>
+                        <div class="flex items-center">
+                            <img src="https://i.pravatar.cc/40?img=15" alt="User" class="w-10 h-10 rounded-full mr-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Yohannes A.</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Former Shiro, now Software Engineer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover transition-all duration-300">
+                    <img src="https://picsum.photos/800/400?random=11" alt="Success story" class="w-full h-48 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Designing a Brighter Future</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">"With the Adobe Creative Cloud license funded through Shiro & Silicon, I built a portfolio that helped me win international design competitions and start my own design studio."</p>
+                        <div class="flex items-center">
+                            <img src="https://i.pravatar.cc/40?img=16" alt="User" class="w-10 h-10 rounded-full mr-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">Selam W.</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Graphic Designer & Entrepreneur</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                <div class="p-6 md:p-8">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Impact by the Numbers</h3>
+                    <div class="grid md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <p class="text-3xl font-bold text-shiro">250+</p>
+                            <p class="text-gray-600 dark:text-gray-400">Youth Supported</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <p class="text-3xl font-bold text-Silicon">180+</p>
+                            <p class="text-gray-600 dark:text-gray-400">Sponsors Engaged</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <p class="text-3xl font-bold text-primary-light dark:text-primary-dark">95%</p>
+                            <p class="text-gray-600 dark:text-gray-400">Success Rate</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <p class="text-3xl font-bold text-green-500">$150K+</p>
+                            <p class="text-gray-600 dark:text-gray-400">Total Value Funded</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="hidden fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">How Shiro & Silicon Works</h2>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
+                <div class="p-6 md:p-8">
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div>
+                            <div class="text-shiro text-3xl mb-4">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">1. Create Your Profile</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Whether you're Shiro (seeking support) or Silicon (wanting to help), start by creating your profile with your skills, goals, and background.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="text-primary-light dark:text-primary-dark text-3xl mb-4">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">2. Browse or Post Requests</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Shiro users can post specific requests for tools or courses they need. Silicon users can browse these requests to find opportunities to help.
+                            </p>
+                        </div>
+                        <div>
+                            <div class="text-Silicon text-3xl mb-4">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">3. Fund or Get Funded</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Silicon sponsors can fund requests directly through our secure platform. Shiro users receive notifications when their requests are fulfilled.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6 md:p-8">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">For Shiro (Youth)</h3>
+                        <ol class="space-y-4 text-gray-600 dark:text-gray-400">
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-shiro text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">1</span>
+                                <span>Create a detailed profile showcasing your skills, goals, and background</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-shiro text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">2</span>
+                                <span>Submit requests for specific digital tools, courses, or college application fees you need</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-shiro text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">3</span>
+                                <span>Explain how these resources will help you achieve your goals</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-shiro text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">4</span>
+                                <span>Receive notifications when your requests are funded</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-shiro text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">5</span>
+                                <span>Provide updates on your progress to your sponsors</span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6 md:p-8">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">For Silicon (Sponsors)</h3>
+                        <ol class="space-y-4 text-gray-600 dark:text-gray-400">
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-Silicon text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">1</span>
+                                <span>Create your sponsor profile with your background and areas of interest</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-Silicon text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">2</span>
+                                <span>Browse requests from talented Ethiopian youth</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-Silicon text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">3</span>
+                                <span>Fund requests directly through our secure platform</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-Silicon text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">4</span>
+                                <span>Receive updates on the impact of your support</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex items-center justify-center w-6 h-6 bg-Silicon text-white text-sm font-bold rounded-full mr-3 flex-shrink-0">5</span>
+                                <span>Optionally connect with the youth you've supported</span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="hidden fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Frequently Asked Questions</h2>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
+                <div class="p-6 md:p-8">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">General Questions</h3>
+                    <div class="space-y-4">
+                        <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                            <h4 class="font-medium text-gray-900 dark:text-white">What is Shiro & Silicon?</h4>
+                            <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                Shiro & Silicon is a platform connecting talented Ethiopian youth (Shiro) with diaspora sponsors (Silicon) who can fund access to digital tools, courses, software subscriptions, and college application fees. Our mission is to remove financial barriers to opportunity.
+                            </p>
+                        </div>
+                        <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                            <h4 class="font-medium text-gray-900 dark:text-white">How is this different from other donation platforms?</h4>
+                            <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                Unlike general donation platforms, we focus on specific, tangible resources that directly enable skill development and career growth. Sponsors fund actual tools and opportunities, not cash handouts, ensuring their support has maximum impact.
+                            </p>
+                        </div>
+                        <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                            <h4 class="font-medium text-gray-900 dark:text-white">Is there a fee for using the platform?</h4>
+                            <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                No, Shiro & Silicon is completely free for both Shiro and Silicon users. We're funded through grants and optional platform donations to keep the service accessible to all.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6 md:p-8">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">For Shiro (Youth)</h3>
+                        <div class="space-y-4">
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white">What can I request through Shiro & Silicon?</h4>
+                                <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                    You can request digital tools (software licenses, app subscriptions), online courses/certifications, college application fees, and other productivity-boosting resources. We don't fund cash requests or hardware.
+                                </p>
+                            </div>
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white">How do I increase my chances of getting funded?</h4>
+                                <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                    Complete your profile thoroughly, be specific about what you need and why, explain how it will help your goals, and consider making a short video pitch. Sponsors are more likely to fund well-presented requests.
+                                </p>
+                            </div>
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white">What are my responsibilities if my request is funded?</h4>
+                                <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                    You should use the resource as intended, provide occasional updates to your sponsor about your progress, and consider paying it forward by helping others when you're able in the future.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6 md:p-8">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">For Silicon (Sponsors)</h3>
+                        <div class="space-y-4">
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white">How does the funding process work?</h4>
+                                <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                    When you find a request you want to support, you can fund it directly through our secure payment system. The funds go directly to purchasing the requested resource (we never give cash to recipients).
+                                </p>
+                            </div>
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white">Can I remain anonymous?</h4>
+                                <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                    Yes, you can choose to remain anonymous to the Shiro user you're supporting. However, we encourage building connections as it often leads to more meaningful impact.
+                                </p>
+                            </div>
+                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white">How do I know my support is making a difference?</h4>
+                                <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                    You'll receive updates from the Shiro user you've supported, and we compile impact reports showing how funded resources are being used to create opportunities. Many sponsors form lasting mentoring relationships.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="hidden fade-in">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
+                <div class="p-6 md:p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">About Shiro & Silicon</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">
+                        Shiro & Silicon is a tech-for-good platform that connects talented young people in Ethiopia (Shiro) with Ethiopian diaspora sponsors (Silicon) who are willing to fund access to digital tools, courses, software subscriptions, and college application fees.
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">
+                        The name "Shiro" comes from the beloved Ethiopian dish that brings people together, symbolizing how our platform connects people. "Silicon" represents the silicon in technology and the diaspora community's role in empowering the next generation.
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Our mission is to create a bridge between opportunity and talent, ensuring that financial constraints don't prevent bright young Ethiopians from accessing the resources they need to thrive in the digital economy.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Our Team</h3>
+                    <div class="grid md:grid-cols-3 gap-6 mb-6">
+                        <div class="flex items-center">
+                            <img src="https://i.pravatar.cc/60?img=30" alt="Team member" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Mikael T.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Founder & CEO</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <img src="https://i.pravatar.cc/60?img=31" alt="Team member" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Amina K.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Community Manager</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <img src="https://i.pravatar.cc/60?img=32" alt="Team member" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">Daniel G.</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Tech Lead</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Our Values</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white mb-2">Transparency</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                We ensure complete transparency in how funds are used, with direct payment for resources and regular impact reporting.
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white mb-2">Empowerment</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                We believe in empowering through opportunity, not charity. Every resource funded is an investment in someone's future.
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white mb-2">Community</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                We're building bridges between Ethiopians at home and abroad, creating networks of support and mentorship.
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-gray-400 mb-2">Sustainability</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Our model creates sustainable impact by focusing on skills and tools that continue providing value long after the initial support.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile, Settings sections -->
+        <section id="profile" class="hidden fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">My Profile</h2>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                <p class="text-gray-700 dark:text-gray-300">Welcome to your profile page!</p>
+                <p class="text-gray-700 dark:text-gray-300 mt-2">User ID: <span id="currentUserId" class="font-mono text-sm break-all">Not logged in</span></p>
+                <p class="text-gray-700 dark:text-gray-300 mt-2">User Email: <span id="currentUserEmail" class="font-mono text-sm">Not logged in</span></p>
+                <button onclick="logout()" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Logout</button>
+            </div>
+        </section>
+
+        <section id="settings" class="hidden fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Settings</h2>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                <p class="text-gray-700 dark:text-gray-300">Manage your application settings here.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">Shiro & Silicon</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm" onclick="navigate(event, 'about')">About Us</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm" onclick="navigate(event, 'success-stories')">Success Stories</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm" onclick="navigate(event, 'how-it-works')">How It Works</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">For Shiro</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm" onclick="showRegisterModal()">Create Account</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm" onclick="navigate(event, 'faq')">FAQ</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm">Request Guidelines</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">For Silicon</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm" onclick="showRegisterModal()">Create Account</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm" onclick="navigate(event, 'faq')">FAQ</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm">Sponsorship Options</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">Connect</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark text-sm">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 dark:text-gray-400 text-sm">&copy; 2025 Shiro & Silicon. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, doc, getDoc, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        // Firebase configuration (replace with your actual config if different)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJO4jotzS2Ufuo81wToK-3YuAIccEG_kQ",
+            authDomain: "shiro-silicon.firebaseapp.com",
+            projectId: "shiro-silicon",
+            storageBucket: "shiro-silicon.firebasestorage.app",
+            messagingSenderId: "667235557040",
+            appId: "1:667235557040:web:10b041608b19bedf8ae575"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- Modal Control Functions ---
+        // Generic function to show any modal overlay
+        function showModal(overlayId) {
+            document.getElementById(overlayId).classList.add('active');
+        }
+
+        // Generic function to hide any modal overlay
+        function hideModal(overlayId) {
+            document.getElementById(overlayId).classList.remove('active');
+        }
+
+        // Specific modal show/hide functions for better readability and direct calls
+        window.showMessageModal = function(message) {
+            document.getElementById('messageModalText').innerText = message;
+            showModal('messageModalOverlay');
+        }
+
+        window.hideMessageModal = function() {
+            hideModal('messageModalOverlay');
+        }
+
+        window.showLoginModal = function() {
+            showModal('loginModalOverlay');
+            // Clear fields when showing the modal
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        window.hideLoginModal = function() {
+            hideModal('loginModalOverlay');
+        }
+
+        window.showRegisterModal = function() {
+            showModal('registerModalOverlay');
+            // Clear fields when showing the modal
+            document.getElementById('reg-email').value = '';
+            document.getElementById('reg-password').value = '';
+        }
+
+        window.hideRegisterModal = function() {
+            hideModal('registerModalOverlay');
+        }
+
+        window.showSubmitRequestModal = function() {
+            // Check if user is logged in before showing the request modal
+            if (!auth.currentUser) {
+                showMessageModal("Please log in or register to submit a request.");
+                showLoginModal(); // Prompt for login if not logged in
+                return;
+            }
+            showModal('submitRequestModalOverlay');
+            // Clear fields when showing the modal
+            document.getElementById('request-title').value = '';
+            document.getElementById('request-description').value = '';
+            document.getElementById('request-category').value = '';
+        }
+
+        window.hideSubmitRequestModal = function() {
+            hideModal('submitRequestModalOverlay');
+        }
+
+        // Function to show request details in a modal
+        window.showRequestDetailsModal = async function(requestId) {
+            const requestDocRef = doc(db, 'requests', requestId);
+            try {
+                const docSnap = await getDoc(requestDocRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // Populate modal content
+                    document.getElementById('requestDetailsModalTitle').innerText = data.title || 'No Title';
+                    document.getElementById('requestDetailsModalDescription').innerText = data.description || 'No Description';
+                    document.getElementById('requestDetailsModalCategory').innerText = `Category: ${data.category || 'Uncategorized'}`;
+                    document.getElementById('requestDetailsModalUser').innerText = `Requested by: ${data.userEmail || 'Anonymous'}`;
+                    document.getElementById('requestDetailsModalDate').innerText = `Date: ${data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}`;
+                    document.getElementById('requestDetailsModalFundLink').href = "https://www.paypal.me/kassax"; // Keep this for now
+
+                    showModal('requestDetailsModalOverlay');
+                } else {
+                    showMessageModal("Request not found.");
+                }
+            } catch (error) {
+                console.error("Error fetching request details:", error);
+                showMessageModal("Could not load request details. Please try again.");
+            }
+        }
+
+        window.hideRequestDetailsModal = function() {
+            hideModal('requestDetailsModalOverlay');
+        }
+
+        // --- Section Visibility and Navigation ---
+        // Function to show a specific content section and hide others
+        window.showSection = function(sectionId) {
+            document.querySelectorAll('main > section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                targetSection.classList.add('fade-in'); // Apply fade-in animation
+            }
+        }
+
+        // Navigation handler for links in the header/footer
+        window.navigate = function(event, sectionId) {
+            event.preventDefault(); // Prevent default link behavior
+            showSection(sectionId);
+            window.history.pushState({}, '', `#${sectionId}`); // Update URL hash
+            
+            // Close mobile menu if open (fixed ReferenceError)
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                window.toggleMobileMenu(); // Call the globally accessible function
+            }
+            
+            window.scrollTo(0, 0); // Scroll to top of the page
+            
+            // If navigating to requests, ensure they are rendered
+            if (sectionId === 'requests') {
+                renderRequests();
+            }
+        }
+
+        // --- Theme Toggle Functionality ---
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (!themeToggle || !mobileThemeToggle || !themeIcon) return;
+            
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light'); // Explicitly set light if no preference or system is light
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+            
+            // Toggle theme logic
+            const toggleTheme = () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
+                }
+            };
+            
+            themeToggle.addEventListener('click', toggleTheme);
+            mobileThemeToggle.addEventListener('click', toggleTheme);
+        }
+
+        // Toggle mobile menu visibility (made globally accessible)
+        window.toggleMobileMenu = function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) {
+                mobileMenu.classList.toggle('hidden');
+            }
+        }
+
+        // --- Firebase Authentication Functions ---
+        window.register = async function() {
+            try {
+                const email = document.getElementById('reg-email').value.trim();
+                const password = document.getElementById('reg-password').value.trim();
+                if (password.length < 6) {
+                    showMessageModal("Password should be at least 6 characters.");
+                    return;
+                }
+                await createUserWithEmailAndPassword(auth, email, password);
+                showMessageModal('Registered & Logged in successfully!');
+                hideRegisterModal(); // Close registration modal
+            } catch (error) {
+                console.error("Registration error:", error);
+                showMessageModal(`Registration failed: ${error.message}`);
+            }
+        };
+
+        window.login = async function() {
+            try {
+                const email = document.getElementById('login-email').value.trim();
+                const password = document.getElementById('login-password').value.trim();
+                await signInWithEmailAndPassword(auth, email, password);
+                showMessageModal('Logged in successfully!');
+                hideLoginModal(); // Close login modal
+            } catch (error) {
+                console.error("Login error:", error);
+                showMessageModal(`Login failed: ${error.message}`);
+            }
+        };
+
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                showMessageModal('Logged out successfully!');
+            } catch (error) {
+                console.error("Logout error:", error);
+                showMessageModal(`Logout failed: ${error.message}`);
+            }
+        };
+
+        // --- Firebase Firestore Functions ---
+        window.submitRequest = async function() {
+            try {
+                if (!auth.currentUser) {
+                    showMessageModal("You must be logged in to submit a request.");
+                    return;
+                }
+
+                const title = document.getElementById('request-title').value.trim();
+                const description = document.getElementById('request-description').value.trim();
+                const category = document.getElementById('request-category').value.trim();
+
+                if (!title || !description || !category) {
+                    showMessageModal('Please fill in all request fields.');
+                    return;
+                }
+
+                await addDoc(collection(db, 'requests'), {
+                    title,
+                    description,
+                    category,
+                    createdAt: new Date(),
+                    userId: auth.currentUser.uid, // Store the user ID of the requester
+                    userEmail: auth.currentUser.email // Store the user email
+                });
+                showMessageModal('Request submitted successfully!');
+                hideSubmitRequestModal(); // Close the modal and clear fields
+            } catch (error) {
+                console.error("Submit request error:", error);
+                showMessageModal(`Failed to submit request: ${error.message}`);
+            }
+        };
+
+        // Render requests from Firestore
+        function renderRequests() {
+            const container = document.getElementById('requests-container');
+            if (!container) return; // Ensure container exists
+
+            // Clear existing requests before rendering new ones and show loading message
+            container.innerHTML = '<p class="text-gray-600 dark:text-gray-400">Loading requests...</p>';
+
+            // Listen for real-time updates to the 'requests' collection
+            // Firestore queries: Using orderBy is generally recommended for sorting.
+            // If you encounter "index missing" errors in a real Firebase project,
+            // Firebase will provide a link in the console to create the necessary index.
+            const q = query(collection(db, 'requests'), orderBy('createdAt', 'desc')); // Order by creation date, newest first
+
+            onSnapshot(q, (snapshot) => {
+                container.innerHTML = ''; // Clear loading message
+                if (snapshot.empty) {
+                    container.innerHTML = '<p class="text-gray-600 dark:text-gray-400">No requests submitted yet. Be the first!</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const requestId = doc.id; // Get the document ID for detail viewing
+
+                    // Basic sanitization for display (prevents simple XSS)
+                    const safeTitle = data.title ? data.title.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'No Title';
+                    const safeDescription = data.description ? data.description.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'No Description';
+                    const safeCategory = data.category ? data.category.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Uncategorized';
+                    const requestDate = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
+                    const requestUserEmail = data.userEmail || 'Anonymous'; // Display user email
+
+                    // Create card element programmatically for better practice
+                    const card = document.createElement('div');
+                    card.className = 'border border-gray-200 p-4 mb-2 rounded-lg bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700 card-hover transition-all duration-300';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class='font-bold text-xl text-gray-800 dark:text-white mb-1'>${safeTitle}</h3>
+                                <p class='text-sm text-gray-500 dark:text-gray-400'>Category: ${safeCategory}</p>
+                            </div>
+                            <!-- You could add a status tag here if 'status' field is added to requests -->
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">New</span>
+                        </div>
+                        <p class='text-gray-700 dark:text-gray-300 mb-2'>${safeDescription}</p>
+                        <p class='text-xs text-gray-500 dark:text-gray-400'>Requested by: ${requestUserEmail}</p>
+                        <p class='text-xs text-gray-500 dark:text-gray-400 mb-3'>Date: ${requestDate}</p>
+                        <div class="flex justify-between items-center">
+                            <a href="https://www.paypal.me/kassax" target="_blank" class='inline-block bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md transition duration-300 ease-in-out'>Fund via PayPal</a>
+                            <button class="text-primary-light dark:text-primary-dark hover:underline font-medium text-sm px-3 py-1 rounded-md" onclick="showRequestDetailsModal('${requestId}')">View Details</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }, (error) => {
+                console.error("Error fetching requests:", error);
+                showMessageModal(`Error loading requests: ${error.message}`);
+                container.innerHTML = '<p class="text-red-500 dark:text-red-400">Failed to load requests. Please try again later.</p>';
+            });
+        }
+
+        // --- Authentication State Change Listener ---
+        onAuthStateChanged(auth, user => {
+            // Get all relevant navigation elements
+            const navElements = {
+                navLoginBtn: document.getElementById('navLoginBtn'),
+                navRegisterBtn: document.getElementById('navRegisterBtn'),
+                navProfileBtn: document.getElementById('navProfileBtn'),
+                navSettingsBtn: document.getElementById('navSettingsBtn'),
+                navLogoutBtn: document.getElementById('navLogoutBtn'),
+                navDivider: document.getElementById('navDivider'),
+                authStatusText: document.getElementById('authStatusText'),
+                mobileNavLoginBtn: document.getElementById('mobileNavLoginBtn'),
+                mobileNavRegisterBtn: document.getElementById('mobileNavRegisterBtn'),
+                mobileNavProfileBtn: document.getElementById('mobileNavProfileBtn'),
+                mobileNavSettingsBtn: document.getElementById('mobileNavSettingsBtn'),
+                mobileNavLogoutBtn: document.getElementById('mobileNavLogoutBtn'),
+                currentUserIdSpan: document.getElementById('currentUserId'),
+                currentUserEmailSpan: document.getElementById('currentUserEmail')
+            };
+
+            // Helper to toggle visibility for elements
+            const toggleVisibility = (element, show) => {
+                if (element) {
+                    if (show) {
+                        element.classList.remove('hidden');
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                }
+            };
+
+            if (user) {
+                // User is logged in
+                console.log('User logged in:', user.email, user.uid);
+                toggleVisibility(navElements.navLoginBtn, false);
+                toggleVisibility(navElements.navRegisterBtn, false);
+                toggleVisibility(navElements.navProfileBtn, true);
+                toggleVisibility(navElements.navSettingsBtn, true);
+                toggleVisibility(navElements.navLogoutBtn, true);
+                toggleVisibility(navElements.navDivider, true);
+                if (navElements.authStatusText) navElements.authStatusText.innerText = user.email || 'Account';
+
+                toggleVisibility(navElements.mobileNavLoginBtn, false);
+                toggleVisibility(navElements.mobileNavRegisterBtn, false);
+                toggleVisibility(navElements.mobileNavProfileBtn, true);
+                toggleVisibility(navElements.mobileNavSettingsBtn, true);
+                toggleVisibility(navElements.mobileNavLogoutBtn, true);
+
+                if (navElements.currentUserIdSpan) navElements.currentUserIdSpan.innerText = user.uid;
+                if (navElements.currentUserEmailSpan) navElements.currentUserEmailSpan.innerText = user.email;
+
+            } else {
+                // User is logged out
+                console.log('User logged out');
+                toggleVisibility(navElements.navLoginBtn, true);
+                toggleVisibility(navElements.navRegisterBtn, true);
+                toggleVisibility(navElements.navProfileBtn, false);
+                toggleVisibility(navElements.navSettingsBtn, false);
+                toggleVisibility(navElements.navLogoutBtn, false);
+                toggleVisibility(navElements.navDivider, false);
+                if (navElements.authStatusText) navElements.authStatusText.innerText = 'Account';
+
+                toggleVisibility(navElements.mobileNavLoginBtn, true);
+                toggleVisibility(navElements.mobileNavRegisterBtn, true);
+                toggleVisibility(navElements.mobileNavProfileBtn, false);
+                toggleVisibility(navElements.mobileNavSettingsBtn, false);
+                toggleVisibility(navElements.mobileNavLogoutBtn, false);
+
+                if (navElements.currentUserIdSpan) navElements.currentUserIdSpan.innerText = 'Not logged in';
+                if (navElements.currentUserEmailSpan) navElements.currentUserEmailSpan.innerText = 'Not logged in';
+            }
+        });
+
+        // --- Initialize the application on DOMContentLoaded ---
+        document.addEventListener('DOMContentLoaded', function() {
+            setupThemeToggle(); // Setup dark mode
+            
+            // Initialize Preline JS components (e.g., dropdowns)
+            // This is crucial for components like the "Account" dropdown to work
+            if (window.HSStaticMethods && typeof window.HSStaticMethods.autoInit === 'function') {
+                window.HSStaticMethods.autoInit();
+            }
+
+            // Show home page by default or based on URL hash
+            const sectionId = window.location.hash.substring(1) || 'home';
+            showSection(sectionId);
+            
+            // Render requests if on requests page initially
+            if (sectionId === 'requests') {
+                renderRequests();
+            }
+            
+            // Handle back/forward navigation
+            window.addEventListener('popstate', function() {
+                const newSectionId = window.location.hash.substring(1) || 'home';
+                showSection(newSectionId);
+                if (newSectionId === 'requests') {
+                    renderRequests();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
